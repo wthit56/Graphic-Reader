@@ -73,6 +73,7 @@ window.addEventListener("load", function () {
 			selected.appendChild(cloned);
 
 			clear.disabled = false;
+			read.disabled = false;
 		}
 		selected.add = addFile;
 
@@ -110,6 +111,7 @@ window.addEventListener("load", function () {
 			if (selected.children.length === 0) {
 				selected.appendChild(none);
 				clear.disabled = true;
+				read.disabled = true;
 			}
 
 			updateCount();
@@ -121,8 +123,23 @@ window.addEventListener("load", function () {
 			selected.innerHTML = "";
 			selected.appendChild(none);
 			updateCount();
+			if (images) { images.clear(); }
+			read.disabled = true;
 		}
 		clear.addEventListener("click", clearSelected);
+
+		var read = byFiles.read = document.getElementById("by-files-read");
+		read.addEventListener("click", function () {
+			var children = selected.children;
+			var image, imageLoader;
+
+			if (children[0] === none) { return; }
+
+			images.clear();
+			for (var i = 0, l = children.length; i < l; i++) {
+				images.add(children[i].file);
+			}
+		});
 		clearSelected();
 
 		return byFiles;
@@ -138,24 +155,35 @@ window.addEventListener("load", function () {
 		var oldValue = input.value, next = null, debounce = 100;
 		function change() {
 			if (input.value !== oldValue) {
+				images.clear();
 				if (next) { clearTimeout(next); }
 				next = setTimeout(reCount, debounce);
 			}
 		}
-		var findUrls = /^(?:ftp|https?):\/\/.+$/gm;
+
+		var urls = [];
+		var findUrls = /^(?:(?:ftp|https?):\/\/|data:image\/).+$/gm;
 		function reCount() {
-			var urls = input.value.match(findUrls);
-			urls = urls ? urls.length : 0;
-			count.innerHTML = urls + " image" + ((urls !== 1) ? "s" : "");
+			urls = input.value.match(findUrls);
+			if (urls == null) { urls = []; }
+			count.innerHTML = urls.length + " image" + ((urls.length !== 1) ? "s" : "");
 
 			next = null;
 			oldValue = input.value;
+			read.disabled = (urls.length === 0);
 		}
 		input.addEventListener("keydown", change);
 		input.addEventListener("keyup", change);
 		input.addEventListener("change", change);
 		input.addEventListener("paste", change);
 
+		var read = document.getElementById("by-urls-read");
+		read.addEventListener("click", function () {
+			images.clear();
+			for (var i = 0, l = urls.length; i < l; i++) {
+				images.add(urls[i]);
+			}
+		});
 
 		return byUrls;
 	})();
@@ -170,6 +198,7 @@ window.addEventListener("load", function () {
 				currentInput.style.display = "none";
 				tab.input.style.display = "block";
 				currentInput = tab.input;
+				images.clear();
 			}
 		}
 
@@ -195,6 +224,55 @@ window.addEventListener("load", function () {
 		currentInput = byFiles;
 
 		return methods;
+	})();
+
+	var images = (function () {
+		var images = document.getElementById("images");
+
+		function imageLoaded() {
+			if (!this.previousSibling || (this.previousSibling.style.display !== "none")) {
+				this.style.display = "";
+			}
+
+			this.continueLoading();
+		}
+		function imageErrored() {
+			console.log("error");
+			this.continueLoading();
+			this.parentNode.removeChild(this);
+		}
+		function continueLoading() {
+			var next = this.nextSibling;
+			while (next && next.complete) {
+				next.style.display = "";
+				next = next.nextSibling;
+			}
+		}
+
+		images.clear = function () {
+			this.innerHTML = "";
+		};
+		images.add = function (image) {
+			var html = new Image();
+			html.continueLoading = continueLoading;
+			html.onload = imageLoaded;
+			html.onerror = imageErrored;
+			html.style.display = "none";
+			this.appendChild(html);
+
+			if (image instanceof File) {
+				var reader = new FileReader();
+				reader.onload = function (e) {
+					html.src = e.target.result;
+				};
+				reader.readAsDataURL(image);
+			}
+			else if (typeof image === "string") {
+				html.src = image;
+			}
+		};
+
+		return images;
 	})();
 
 	methods.byUrls.click();

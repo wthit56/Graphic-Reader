@@ -5,7 +5,7 @@
 	#methods li {display:inline-block;}
 	#methods input {display:none;}
 	#methods label {cursor:pointer;}
-		#methods input:checked+label, #methods label:hover {text-decoration:underline;}
+		#methods input:checked + label, #methods label:hover {text-decoration:underline;}
 	#methods a {text-decoration:none; color:inherit;}
 
 #by-file {}
@@ -26,3 +26,6 @@
 	#by-urls-input {width:100%; box-sizing:border-box; min-height:200px; resize:vertical;}
 
 .controls {text-align:right;}
+
+#images {padding:0.5em 1em; text-align:center;}
+	#images img {display:block; max-width:100%; margin:0.5em auto;}
