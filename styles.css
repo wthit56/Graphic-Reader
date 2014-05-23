@@ -1,0 +1,15 @@
+﻿body {}
+
+#by-file {}
+	#by-file-selection {position:relative; background:#eee;}
+		#by-file-selection input {position:absolute; width:100%; height:100%; opacity:0;}
+		#by-file-selection label {padding:1em; display:block;}
+
+	#by-file-selected {}
+		#by-file-selected li.none {}
+				
+		#by-file-selected li.file {}
+			#by-file-selected li.file span {}
+			#by-file-selected li.file input {}
+
+	#by-file-selected-clear {}
