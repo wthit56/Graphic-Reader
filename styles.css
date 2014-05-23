@@ -1,15 +1,28 @@
 ﻿body {}
 
-#by-file {}
-	#by-file-selection {position:relative; background:#eee;}
-		#by-file-selection input {position:absolute; width:100%; height:100%; opacity:0;}
-		#by-file-selection label {padding:1em; display:block;}
+#methods {}
+	#methods ul {margin:0; list-style:none; padding:0;}
+	#methods li {display:inline-block;}
+	#methods input {display:none;}
+	#methods label {cursor:pointer;}
+		#methods input:checked+label, #methods label:hover {text-decoration:underline;}
+	#methods a {text-decoration:none; color:inherit;}
 
-	#by-file-selected {}
-		#by-file-selected li.none {}
-				
-		#by-file-selected li.file {}
-			#by-file-selected li.file span {}
-			#by-file-selected li.file input {}
+#by-file {}
+	#by-files-selection {position:relative; background:#eee;}
+		#by-files-selection input {position:absolute; width:100%; height:100%; opacity:0; cursor:pointer;}
+		#by-files-selection label {padding:1em; display:block; text-align:center; font-size:2em;}
+
+	#by-files-selected {}
+		#by-files-selected li.none {}
+
+		#by-files-selected li.file {}
+			#by-files-selected li.file span {}
+			#by-files-selected li.file input {}
 
 	#by-file-selected-clear {}
+
+#by-urls {}
+	#by-urls-input {width:100%; box-sizing:border-box; min-height:200px; resize:vertical;}
+
+.controls {text-align:right;}

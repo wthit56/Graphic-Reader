@@ -6,22 +6,44 @@
 		<link href="styles.css" rel="stylesheet" type="text/css" />
 	</head>
 	<body>
-		<form id="by-file">
-			<div id="by-file-selection">
-				<input id="by-file-selection-input" type="file" accept="image/*" multiple />
-				<label for="by-file-selection-input">
-					Drag and Drop files here,<br />
+		<nav id="methods">
+			Read by 
+			<input value="by-files" type="radio" name="method" id="method-by-files" checked />
+			<label for="method-by-files"><a href="#by-files">&hellip;Files</a></label>
+			<input value="by-urls" type="radio" name="method" id="method-by-urls" />
+			<label for="method-by-urls"><a href="#by-urls">&hellip;Urls</a></label>
+		</nav>
+		<form id="by-files">
+			<div id="by-files-selection">
+				<input id="by-files-selection-input" type="file" accept="image/*" multiple />
+				<label for="by-files-selection-input">
+					Drag and Drop files here<br />
 					or Click to Select files
 				</label>
 			</div>
-			<ul id="by-file-selected">
+			<ul id="by-files-selected">
 				<li class="none">No files selected</li>
 				<li class="file">
 					<span>Filename</span>
 					<input value="^" title="Move Up" type="button" /><input value="v" title="Move Down" type="button" disabled /><input value="x" title="Remove" type="button" />
 				</li>
 			</ul>
-			<input id="by-file-selected-clear" value="Clear Files" type="button" disabled />
+			<div class="controls">
+				<span id="by-files-count">0 images</span>
+				<input id="by-files-selected-clear" value="Clear Files" type="button" disabled />
+				<input id="by-files-read" value="Read" type="button" disabled />
+			</div>
+		</form>
+		<form id="by-urls">
+			<textarea id="by-urls-input"></textarea>
+			<textarea onclick="this.select();">
+https://www.google.com/images/srpr/logo11w.png
+http://www.digitaltrends.com/wp-content/uploads/2013/02/yahoo-voices-hacked-450-000-passwords-posted-online-7169a7e88d.jpg
+</textarea>
+			<div class="controls">
+				<span id="by-urls-count">0 images</span>
+				<input id="by-urls-read" value="Read" type="button" disabled />
+			</div>
 		</form>
 	</body>
 </html>
