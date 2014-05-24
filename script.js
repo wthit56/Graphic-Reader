@@ -42,8 +42,6 @@ window.addEventListener("load", function () {
 		var example = selected.example = selected.children[1];
 		var none = selected.children[0];
 
-		selected.removeChild(example);
-
 		var count = byFiles.count = document.getElementById("by-files-count");
 		function updateCount() {
 			var files = (selected.children[0] === none) ? 0 : selected.children.length;
@@ -59,18 +57,19 @@ window.addEventListener("load", function () {
 			var clonedChildren = cloned.children;
 			clonedChildren[0].innerText = file.name;
 
-			clonedChildren[1].addEventListener("click", moveUp);
-			clonedChildren[1].line = cloned;
-			if (!cloned.previousSibling) { clonedChildren[1].disabled = true; }
-			clonedChildren[2].addEventListener("click", moveDown);
-			clonedChildren[2].line = cloned;
-			if (previous) { previous.children[2].disabled = false; }
-
-			clonedChildren[3].addEventListener("click", remove);
-			clonedChildren[3].line = cloned;
+			var buttons = cloned.getElementsByTagName("INPUT");
+			buttons[0].addEventListener("click", moveUp);
+			buttons[0].line = cloned;
+			buttons[1].addEventListener("click", moveDown);
+			buttons[1].line = cloned;
+			buttons[2].addEventListener("click", remove);
+			buttons[2].line = cloned;
 
 			cloned.file = file;
 			selected.appendChild(cloned);
+
+			if (cloned.previousSibling) { previous.children[1].children[1].disabled = false; }
+			else { buttons[0].disabled = true; }
 
 			clear.disabled = false;
 			read.disabled = false;
@@ -81,30 +80,30 @@ window.addEventListener("load", function () {
 			var line = this.line;
 			selected.insertBefore(line, line.previousSibling);
 
-			if (!line.previousSibling) { line.children[1].disabled = true; }
-			line.children[2].disabled = false;
+			if (!line.previousSibling) { line.children[1].children[0].disabled = true; }
+			line.children[1].children[1].disabled = false;
 
-			line.nextSibling.children[1].disabled = false;
-			line.nextSibling.children[2].disabled = !line.nextSibling.nextSibling;
+			line.nextSibling.children[1].children[0].disabled = false;
+			line.nextSibling.children[1].children[1].disabled = !line.nextSibling.nextSibling;
 		}
 		function moveDown() {
 			var line = this.line;
 			if (line.nextSibling.nextSibling) { selected.insertBefore(line, line.nextSibling.nextSibling); }
 			else { selected.appendChild(line); }
 
-			line.children[1].disabled = false;
-			if (!line.nextSibling) { line.children[2].disabled = true; }
+			line.children[1].children[0].disabled = false;
+			if (!line.nextSibling) { line.children[1].children[1].disabled = true; }
 
-			line.previousSibling.children[1].disabled = !line.previousSibling.previousSibling;
-			line.previousSibling.children[2].disabled = false;
+			line.previousSibling.children[1].children[0].disabled = !line.previousSibling.previousSibling;
+			line.previousSibling.children[1].children[1].disabled = false;
 		}
 		function remove() {
 			var line = this.line;
 			if (line.previousSibling && !line.nextSibling) {
-				line.previousSibling.children[2].disabled = true;
+				line.previousSibling.children[1].children[1].disabled = true;
 			}
 			if(!line.previousSibling && line.nextSibling) {
-				this.line.nextSibling.children[1].disabled = true;
+				line.nextSibling.children[1].children[0].disabled = true;
 			}
 			selected.removeChild(line);
 
@@ -119,7 +118,7 @@ window.addEventListener("load", function () {
 			return false;
 		}
 
-		function clearSelected() {
+		var clearSelected = byFiles.clear = function () {
 			selected.innerHTML = "";
 			selected.appendChild(none);
 			updateCount();
@@ -140,7 +139,6 @@ window.addEventListener("load", function () {
 				images.add(children[i].file);
 			}
 		});
-		clearSelected();
 
 		return byFiles;
 	})();
@@ -161,10 +159,10 @@ window.addEventListener("load", function () {
 			}
 		}
 
-		var urls = [];
+		var urls = byUrls.urls = [];
 		var findUrls = /^(?:(?:ftp|https?):\/\/|data:image\/).+$/gm;
 		function reCount() {
-			urls = input.value.match(findUrls);
+			urls = byUrls.urls = input.value.match(findUrls);
 			if (urls == null) { urls = []; }
 			count.innerHTML = urls.length + " image" + ((urls.length !== 1) ? "s" : "");
 
@@ -177,13 +175,68 @@ window.addEventListener("load", function () {
 		input.addEventListener("change", change);
 		input.addEventListener("paste", change);
 
-		var read = document.getElementById("by-urls-read");
-		read.addEventListener("click", function () {
+		var read = byUrls.read = document.getElementById("by-urls-read");
+		var readRender = read.render = function () {
+			var urls = byUrls.urls;
 			images.clear();
 			for (var i = 0, l = urls.length; i < l; i++) {
 				images.add(urls[i]);
 			}
+		};
+		read.addEventListener("click", function () { readRender(urls); });
+
+		var link = byUrls.link = document.getElementById("by-urls-link");
+		var generateLink = link.generate = function () {
+			var pre = "", post = "";
+			var possible = urls[0];
+			for (var i = 0, l = urls.length; i < l; i++) {
+				while (urls[i].indexOf(possible) !== 0) {
+					possible = possible.substring(0, possible.length - 1);
+				}
+				if (possible.length === 0) { break; }
+			}
+			pre = possible;
+
+			possible = urls[0];
+			for (var i = 0, l = urls.length; i < l; i++) {
+				while (urls[i].indexOf(possible) !== urls[i].length - possible.length) {
+					possible = possible.substring(1);
+				}
+				if (possible.length === 0) { break; }
+			}
+			post = possible;
+			console.log(pre + "..." + post);
+
+			var url = window.location.href;
+			var paramPoint = url.indexOf("?");
+			if (paramPoint !== -1) { url = url.substring(0, paramPoint); }
+			var compressed = pre + "|" + post;
+			for (var i = 0, l = urls.length; i < l; i++) {
+				compressed += "|" + urls[i].substring(pre.length, urls[i].length - post.length);
+			}
+			url += "?pre-post=" + encodeURIComponent(compressed);
+			return url;
+		};
+		link.addEventListener("click", function () {
+			prompt("Copy this url and share it wherever you like. It'll lead you back here, with the same image urls.", generateLink());
 		});
+
+		var decompress = byUrls.decompress = function (type, data) {
+			var urls = [];
+			console.log(data);
+
+			switch (type) {
+				case "pre-post":
+					data = data.split("|");
+					for (var i = 2, l = data.length; i < l; i++) {
+						urls.push(data[0] + data[i] + data[1]);
+					}
+					break;
+			}
+			console.log(urls);
+
+			return urls;
+		};
 
 		return byUrls;
 	})();
@@ -254,6 +307,8 @@ window.addEventListener("load", function () {
 		};
 		images.add = function (image) {
 			var html = new Image();
+			console.log("adding", image, html);
+
 			html.continueLoading = continueLoading;
 			html.onload = imageLoaded;
 			html.onerror = imageErrored;
@@ -275,5 +330,26 @@ window.addEventListener("load", function () {
 		return images;
 	})();
 
-	methods.byUrls.click();
+	byFiles.clear();
+
+	(function () {
+		var url = window.location.href;
+		var left = url.indexOf("?"), right;
+		if (left === -1) { return; }
+		left += 1;
+		right = url.indexOf("=", left);
+		if (right === -1) { return; }
+		var type = url.substring(left, right);
+		left = right + 1;
+		right = url.indexOf("&", left);
+		if (right === -1) { right = url.length; }
+		var urls = byUrls.decompress(type, decodeURIComponent(url.substring(left, right)));
+		if (urls.length > 0) {
+			methods.byUrls.click();
+			byUrls.urls = urls;
+			byUrls.read.render();
+			byUrls.input.value = byUrls.urls.join("\n");
+			byUrls.read.disabled = false;
+		}
+	})();
 });
