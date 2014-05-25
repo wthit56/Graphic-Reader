@@ -210,11 +210,11 @@ window.addEventListener("load", function () {
 			var url = window.location.href;
 			var paramPoint = url.indexOf("?");
 			if (paramPoint !== -1) { url = url.substring(0, paramPoint); }
-			var compressed = pre + "|" + post;
+			var compressed = pre + ";" + post;
 			for (var i = 0, l = urls.length; i < l; i++) {
-				compressed += "|" + urls[i].substring(pre.length, urls[i].length - post.length);
+				compressed += ";" + encodeURIComponent(urls[i].substring(pre.length, urls[i].length - post.length));
 			}
-			url += "?pre-post=" + encodeURIComponent(compressed);
+			url += "?pre-post=" + compressed;
 			return url;
 		};
 		link.addEventListener("click", function () {
@@ -227,7 +227,7 @@ window.addEventListener("load", function () {
 
 			switch (type) {
 				case "pre-post":
-					data = data.split("|");
+					data = data.split(";");
 					for (var i = 2, l = data.length; i < l; i++) {
 						urls.push(data[0] + data[i] + data[1]);
 					}
@@ -351,5 +351,6 @@ window.addEventListener("load", function () {
 			byUrls.input.value = byUrls.urls.join("\n");
 			byUrls.read.disabled = false;
 		}
+		byUrls.count.innerText = urls.length + " image" + (urls.length === 1 ? "" : "s");
 	})();
 });
